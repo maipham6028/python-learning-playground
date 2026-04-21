@@ -22,6 +22,7 @@ init_database()
 # Page config
 st.set_page_config(
     page_title="Python Learning Playground",
+    page_icon="🐍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -42,22 +43,35 @@ st.markdown("""
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 1.5rem;
         border-radius: 10px;
-        color: white;
+        color: white !important;
         text-align: center;
     }
+    .stat-card h1, .stat-card h2, .stat-card h3, .stat-card p {
+        color: white !important;
+    }
     .quiz-question {
-        background: #fff;
+        background: transparent;
         border: 2px solid #667eea;
-        padding: 1.5rem;
         border-radius: 10px;
+        padding: 1.5rem;
         margin: 1rem 0;
+    }
+    .quiz-question h4 {
+        color: inherit !important;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
     }
     .achievement-badge {
         display: inline-block;
-        background: gold;
+        background: #f0c040;
+        color: #333 !important;
         padding: 0.5rem 1rem;
         border-radius: 20px;
         margin: 0.25rem;
+    }
+    div[data-testid="stRadio"] label {
+        font-size: 1rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -77,12 +91,14 @@ if 'quiz_state' not in st.session_state:
 
 def show_login_page():
     """Display login/register page"""
-    st.markdown('<h1 class="main-header"> Python Learning Playground</h1>', 
+    st.markdown('<h1 class="main-header">🐍 Python Learning Playground</h1>', 
                 unsafe_allow_html=True)
+    st.markdown("### 🎓 Học Python qua trực quan hóa & Thử thách!")
+    
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        tab1, tab2 = st.tabs([" Đăng nhập", " Đăng ký"])
+        tab1, tab2 = st.tabs(["🔐 Đăng nhập", "📝 Đăng ký"])
         
         with tab1:
             st.markdown("#### Đăng nhập vào tài khoản")
@@ -90,7 +106,7 @@ def show_login_page():
             with st.form("login_form"):
                 username = st.text_input("Username hoặc Email")
                 password = st.text_input("Password", type="password")
-                submit = st.form_submit_button(" Đăng nhập", use_container_width=True)
+                submit = st.form_submit_button("🚀 Đăng nhập", use_container_width=True)
                 
                 if submit:
                     if username and password:
@@ -98,7 +114,7 @@ def show_login_page():
                         if success:
                             st.session_state.user = result
                             st.session_state.page = 'dashboard'
-                            st.success(f" Chào mừng {result['full_name']}!")
+                            st.success(f"✅ Chào mừng {result['full_name']}!")
                             time.sleep(1)
                             st.rerun()
                         else:
@@ -147,35 +163,27 @@ def show_dashboard():
     user = st.session_state.user
     stats = get_user_stats(user['id'])
     
-    # Header with user info
     col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
     
     with col1:
-        st.markdown(f"## {stats['avatar']} Chào mừng, **{stats['full_name']}**!")
-        st.caption(f"@{stats['username']} | Level {stats['level']}")
-    
+        st.markdown(f"## Xin chào, **{stats['full_name']}**")
+        st.caption(f"@{stats['username']} · Level {stats['level']}")
     with col2:
-        st.metric("🏆 Điểm", stats['total_points'])
-    
+        st.metric("Điểm tích lũy", stats['total_points'])
     with col3:
-        st.metric("📚 Quiz", f"{stats['quizzes_completed']}/10")
-    
+        st.metric("Quiz hoàn thành", f"{stats['quizzes_completed']}/10")
     with col4:
-        st.metric("💻 Challenges", stats['challenges_completed'])
+        st.metric("Bài code", stats['challenges_completed'])
     
     st.markdown("---")
-    
-    # Progress section
-    st.markdown("### 📊 Tiến độ học tập")
+    st.markdown("### Tiến độ học tập")
     
     progress = get_user_progress(user['id'])
     
-    # Overall progress
     total_completion = sum(p['completion_percentage'] for p in progress) / 10
     st.progress(total_completion / 100)
-    st.caption(f"**Tổng tiến độ: {total_completion:.1f}%**")
+    st.caption(f"Tổng tiến độ: **{total_completion:.1f}%**")
     
-    # Chapter cards
     chapters = get_all_chapters()
     cols = st.columns(2)
     
@@ -193,18 +201,18 @@ def show_dashboard():
                 
                 col_a, col_b, col_c = st.columns(3)
                 with col_a:
-                    st.caption(f"📝 Quiz: {chapter_progress['quiz_score']}%")
+                    st.caption(f"Quiz: {chapter_progress['quiz_score']}%")
                 with col_b:
                     total_challenges = len(CODE_CHALLENGES.get(chapter_id, []))
                     completed = len(chapter_progress['challenges_completed'])
-                    st.caption(f"💻 Code: {completed}/{total_challenges}")
+                    st.caption(f"Code: {completed}/{total_challenges}")
                 with col_c:
                     if completion == 100:
-                        st.caption("✅ Hoàn thành!")
+                        st.caption("Hoàn thành")
                     elif completion > 0:
-                        st.caption(f"📊 {completion}%")
+                        st.caption(f"{completion}%")
                     else:
-                        st.caption("🔒 Chưa bắt đầu")
+                        st.caption("Chưa bắt đầu")
                 
                 st.markdown("")
 
@@ -215,9 +223,8 @@ def show_dashboard():
 
 def show_quiz_page():
     """Quiz interface with timer and scoring"""
-    st.markdown("## 📝 Quiz - Kiểm tra kiến thức")
+    st.markdown("## Quiz — Kiểm tra kiến thức")
     
-    # Chapter selection
     if 'active_quiz' not in st.session_state.quiz_state:
         st.markdown("### Chọn chương để làm quiz:")
         
@@ -230,7 +237,7 @@ def show_quiz_page():
                 num_questions = len(quiz['questions'])
                 
                 if st.button(
-                    f"📖 {chapter_title}\n🎯 {num_questions} câu hỏi",
+                    f"{chapter_title}  ·  {num_questions} câu hỏi",
                     key=f"start_quiz_{chapter_id}",
                     use_container_width=True
                 ):
@@ -265,10 +272,10 @@ def show_quiz_page():
         st.markdown(f"### {quiz['title']}")
         st.caption(f"Câu {current_idx + 1}/{len(questions)}")
     with col2:
-        st.metric("Score", f"{st.session_state.quiz_state['score']}/{current_idx}")
+        st.metric("Điểm", f"{st.session_state.quiz_state['score']}/{current_idx}")
     with col3:
         elapsed = int(time.time() - st.session_state.quiz_state['start_time'])
-        st.metric("⏱️ Thời gian", f"{elapsed}s")
+        st.metric("Thời gian", f"{elapsed}s")
     
     # Progress bar
     progress = (current_idx) / len(questions)
@@ -292,7 +299,7 @@ def show_quiz_page():
     col1, col2, col3 = st.columns([1, 1, 1])
     
     with col2:
-        if st.button("✅ Submit", use_container_width=True, type="primary"):
+        if st.button("Xác nhận", use_container_width=True, type="primary"):
             if answer is not None:
                 selected_idx = question['options'].index(answer)
                 is_correct = selected_idx == question['correct']
@@ -307,20 +314,20 @@ def show_quiz_page():
                 
                 if is_correct:
                     st.session_state.quiz_state['score'] += 1
-                    st.success(f"✅ Chính xác! {question['explanation']}")
+                    st.success(f"Chính xác! {question['explanation']}")
                 else:
-                    st.error(f"❌ Sai rồi. Đáp án đúng: **{question['options'][question['correct']]}**")
-                    st.info(f"💡 {question['explanation']}")
+                    st.error(f"Sai rồi. Đáp án đúng: **{question['options'][question['correct']]}**")
+                    st.info(f"Giải thích: {question['explanation']}")
                 
                 time.sleep(2)
                 
                 st.session_state.quiz_state['current_question'] += 1
                 st.rerun()
             else:
-                st.warning("⚠️ Vui lòng chọn đáp án!")
+                st.warning("Vui lòng chọn đáp án!")
     
     with col1:
-        if st.button("❌ Thoát quiz", use_container_width=True):
+        if st.button("Thoát quiz", use_container_width=True):
             st.session_state.quiz_state = {}
             st.rerun()
 
@@ -339,56 +346,51 @@ def show_quiz_results(chapter_id, quiz):
     # Check achievements
     new_achievements = check_and_award_achievements(user_id)
     
-    # Display results
-    st.markdown(f"## 🎉 Hoàn thành: {quiz['title']}")
+    st.markdown(f"## Kết quả: {quiz['title']}")
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("📊 Điểm", f"{score}/{total}")
+        st.metric("Điểm", f"{score}/{total}")
     with col2:
-        st.metric("📈 %", f"{percentage:.1f}%")
+        st.metric("Tỉ lệ đúng", f"{percentage:.1f}%")
     with col3:
-        st.metric("⏱️ Thời gian", f"{time_taken}s")
+        st.metric("Thời gian", f"{time_taken}s")
     with col4:
-        st.metric("💰 Points", f"+{points_earned}")
+        st.metric("Points nhận được", f"+{points_earned}")
     
-    # Grade
     if percentage >= 90:
         st.balloons()
-        st.success("### 🏆 Xuất sắc! Bạn đã nắm vững kiến thức!")
+        st.success("Xuất sắc! Bạn đã nắm vững kiến thức chương này.")
     elif percentage >= 70:
-        st.success("### 👍 Tốt lắm! Tiếp tục phát huy!")
+        st.success("Tốt lắm! Tiếp tục phát huy.")
     elif percentage >= 50:
-        st.warning("### 💪 Khá ổn, nhưng cần ôn thêm!")
+        st.warning("Khá ổn, nhưng cần ôn thêm một chút.")
     else:
-        st.error("### 📚 Hãy xem lại tài liệu và thử lại!")
+        st.error("Hãy xem lại tài liệu và thử lại nhé.")
     
-    # New achievements
     if new_achievements:
-        st.markdown("### 🎊 Thành tích mới!")
+        st.markdown("### Thành tích mới mở khóa!")
         for ach in new_achievements:
-            st.markdown(f"🏅 **{ach['icon']} {ach['name']}**")
+            st.markdown(f"**{ach['icon']} {ach['name']}**")
     
-    # Review answers
     st.markdown("---")
-    st.markdown("### 📝 Xem lại câu trả lời")
+    st.markdown("### Xem lại câu trả lời")
     
     for i, ans in enumerate(st.session_state.quiz_state['answers'], 1):
-        icon = '✅' if ans['is_correct'] else '❌'
-        with st.expander(f"Câu {i}: {icon} {ans['question'][:60]}..."):
+        icon = 'Đúng' if ans['is_correct'] else 'Sai'
+        with st.expander(f"Câu {i} [{icon}]: {ans['question'][:60]}..."):
             st.markdown(f"**Câu hỏi:** {ans['question']}")
             st.markdown(f"**Bạn chọn:** {ans['selected']}")
             st.markdown(f"**Đáp án đúng:** {ans['correct']}")
-            st.info(f"💡 **Giải thích:** {ans['explanation']}")
+            st.info(f"Giải thích: {ans['explanation']}")
     
-    # Action buttons
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🔄 Làm lại", use_container_width=True):
+        if st.button("Làm lại", use_container_width=True):
             st.session_state.quiz_state = {}
             st.rerun()
     with col2:
-        if st.button("🏠 Về Dashboard", use_container_width=True, type="primary"):
+        if st.button("Về Dashboard", use_container_width=True, type="primary"):
             st.session_state.quiz_state = {}
             st.session_state.page = 'dashboard'
             st.rerun()
@@ -400,12 +402,11 @@ def show_quiz_results(chapter_id, quiz):
 
 def show_code_challenges():
     """Code challenges interface with auto-grading"""
-    st.markdown("## 💻 Code Challenges")
-    st.caption("Luyện tập viết code với auto-grading system!")
+    st.markdown("## Code Challenges")
+    st.caption("Luyện tập viết code với hệ thống chấm điểm tự động.")
     
-    # Chapter selection
     chapters = get_all_chapters()
-    chapter_options = {f"📖 {title}": cid for cid, title in chapters}
+    chapter_options = {title: cid for cid, title in chapters}
     
     selected = st.selectbox("Chọn chương:", list(chapter_options.keys()))
     chapter_id = chapter_options[selected]
@@ -413,35 +414,32 @@ def show_code_challenges():
     challenges = get_challenges(chapter_id)
     
     if not challenges:
-        st.info("Chưa có challenge cho chương này!")
+        st.info("Chưa có bài tập cho chương này.")
         return
     
-    # User progress
     user_id = st.session_state.user['id']
     progress = get_user_progress(user_id)
     chapter_progress = next((p for p in progress if p['chapter_id'] == chapter_id), None)
     completed_challenges = chapter_progress['challenges_completed'] if chapter_progress else []
     
-    # Show challenges
-    st.markdown(f"### Challenges ({len(completed_challenges)}/{len(challenges)} hoàn thành)")
+    st.markdown(f"**{len(completed_challenges)}/{len(challenges)} bài đã hoàn thành**")
     
     for challenge in challenges:
         is_completed = challenge['id'] in completed_challenges
-        icon = "✅" if is_completed else "⭕"
+        status = "Hoàn thành" if is_completed else challenge['difficulty']
         
         with st.expander(
-            f"{icon} [{challenge['difficulty']}] {challenge['title']}",
+            f"[{status}] {challenge['title']}",
             expanded=not is_completed
         ):
-            st.markdown(f"**Mô tả:** {challenge['description']}")
+            st.markdown(f"**Yêu cầu:** {challenge['description']}")
             
-            # Code editor
             code_key = f"code_{challenge['id']}"
             if code_key not in st.session_state:
                 st.session_state[code_key] = challenge['starter_code']
             
             user_code = st.text_area(
-                "Code của bạn:",
+                "Code:",
                 value=st.session_state[code_key],
                 height=200,
                 key=f"editor_{challenge['id']}"
@@ -450,19 +448,19 @@ def show_code_challenges():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("▶️ Run Tests", key=f"run_{challenge['id']}", 
+                if st.button("Chạy & Kiểm tra", key=f"run_{challenge['id']}", 
                             use_container_width=True, type="primary"):
                     with st.spinner("Đang chạy tests..."):
                         all_passed, results, error = run_code_tests(user_code, challenge)
                         
                         if error:
-                            st.error(f"❌ **Lỗi:** {error}")
+                            st.error(f"Lỗi: {error}")
                         else:
                             passed_count = sum(1 for r in results if r['passed'])
                             total_tests = len(results)
                             
                             if all_passed:
-                                st.success(f"🎉 **Tất cả {total_tests} tests PASSED!**")
+                                st.success(f"Tất cả {total_tests} tests đã pass!")
                                 
                                 is_new, points = update_code_progress(
                                     user_id, challenge['id'], chapter_id, 
@@ -471,37 +469,37 @@ def show_code_challenges():
                                 
                                 if is_new:
                                     st.balloons()
-                                    st.success(f"🏆 +{points} points!")
+                                    st.success(f"+{points} điểm!")
                                     check_and_award_achievements(user_id)
                                     time.sleep(2)
                                     st.rerun()
                             else:
-                                st.warning(f"⚠️ **Passed {passed_count}/{total_tests} tests**")
+                                st.warning(f"Passed {passed_count}/{total_tests} tests")
                             
-                            st.markdown("#### 📊 Chi tiết tests:")
+                            st.markdown("**Chi tiết:**")
                             for r in results:
                                 if r['passed']:
-                                    st.success(f"✅ Test {r['test_num']}: PASSED")
+                                    st.success(f"Test {r['test_num']}: Pass")
                                 else:
                                     if 'error' in r:
-                                        st.error(f"❌ Test {r['test_num']}: ERROR - {r['error']}")
+                                        st.error(f"Test {r['test_num']}: Lỗi — {r['error']}")
                                     else:
                                         st.error(
-                                            f"❌ Test {r['test_num']}: FAILED\n\n"
+                                            f"Test {r['test_num']}: Fail\n"
                                             f"- Input: `{r['input']}`\n"
                                             f"- Expected: `{r['expected']}`\n"
                                             f"- Got: `{r['actual']}`"
                                         )
             
             with col2:
-                if st.button("💡 Hint", key=f"hint_{challenge['id']}", 
+                if st.button("Gợi ý", key=f"hint_{challenge['id']}", 
                             use_container_width=True):
                     hints = challenge.get('hints', [])
                     if hints:
-                        st.info("**Gợi ý:**\n" + "\n".join(f"- {h}" for h in hints))
+                        st.info("\n".join(f"- {h}" for h in hints))
             
             with col3:
-                if st.button("🔄 Reset", key=f"reset_{challenge['id']}", 
+                if st.button("Reset", key=f"reset_{challenge['id']}", 
                             use_container_width=True):
                     st.session_state[code_key] = challenge['starter_code']
                     st.rerun()
@@ -513,8 +511,8 @@ def show_code_challenges():
 
 def show_leaderboard():
     """Show global leaderboard"""
-    st.markdown("## 🏆 Bảng xếp hạng")
-    st.caption("Top học viên xuất sắc nhất!")
+    st.markdown("## Bảng xếp hạng")
+    st.caption("Top học viên xuất sắc nhất.")
     
     leaderboard = get_leaderboard(limit=20)
     
@@ -524,10 +522,10 @@ def show_leaderboard():
     
     # Top 3 podium
     if len(leaderboard) >= 3:
-        st.markdown("### 🥇 Top 3")
+        st.markdown("### Top 3")
         col1, col2, col3 = st.columns(3)
         
-        medals = ['🥈', '🥇', '🥉']
+        medals = ['2nd', '1st', '3rd']
         positions = [1, 0, 2]
         
         for col, pos in zip([col1, col2, col3], positions):
@@ -536,32 +534,29 @@ def show_leaderboard():
                 with col:
                     st.markdown(f"""
                     <div class="stat-card">
-                        <h1>{medals[pos] if pos < len(medals) else '🏅'}</h1>
-                        <h2>{user['avatar']} {user['full_name']}</h2>
+                        <h3>{medals[pos]}</h3>
+                        <h2>{user['full_name']}</h2>
                         <p>@{user['username']}</p>
-                        <h3>🏆 {user['total_points']} points</h3>
-                        <p>Level {user['level']} | 🔥 {user['streak_days']} days</p>
+                        <h3>{user['total_points']} pts</h3>
+                        <p>Level {user['level']} · {user['streak_days']} day streak</p>
                     </div>
                     """, unsafe_allow_html=True)
     
     st.markdown("---")
-    
-    # Full leaderboard table
-    st.markdown("### 📊 Bảng xếp hạng đầy đủ")
+    st.markdown("### Toàn bộ bảng xếp hạng")
     
     leaderboard_data = []
     for user in leaderboard:
         is_current = (user['username'] == st.session_state.user['username'])
-        name = f"**{user['full_name']}** (bạn)" if is_current else user['full_name']
+        name = f"{user['full_name']} (bạn)" if is_current else user['full_name']
         
         leaderboard_data.append({
-            '#': user['rank'],
-            'Avatar': user['avatar'],
+            'Hạng': user['rank'],
             'Tên': name,
-            'Username': f"@{user['username']}",
+            'Username': user['username'],
             'Điểm': user['total_points'],
             'Level': user['level'],
-            'Streak': f"🔥 {user['streak_days']}"
+            'Streak': f"{user['streak_days']} ngày"
         })
     
     df = pd.DataFrame(leaderboard_data)
@@ -578,53 +573,52 @@ def show_profile():
     stats = get_user_stats(user['id'])
     achievements = get_user_achievements(user['id'])
     
-    st.markdown("## 👤 Hồ sơ của tôi")
+    st.markdown("## Hồ sơ cá nhân")
     
     col1, col2 = st.columns([1, 2])
     
     with col1:
         st.markdown(f"""
         <div class="stat-card">
-            <h1 style="font-size: 5rem">{stats['avatar']}</h1>
-            <h2>{stats['full_name']}</h2>
+            <div style="font-size: 4rem;">{stats['avatar']}</div>
+            <h2 style="margin-top: 0.5rem;">{stats['full_name']}</h2>
             <p>@{stats['username']}</p>
             <p>Level {stats['level']}</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("### 📊 Thống kê")
+        st.markdown("### Thống kê")
         col_a, col_b = st.columns(2)
         with col_a:
-            st.metric("🏆 Tổng điểm", stats['total_points'])
-            st.metric("📝 Quiz hoàn thành", stats['quizzes_completed'])
+            st.metric("Tổng điểm", stats['total_points'])
+            st.metric("Quiz hoàn thành", stats['quizzes_completed'])
         with col_b:
-            st.metric("💻 Challenges", stats['challenges_completed'])
-            st.metric("📈 Điểm TB Quiz", f"{stats['avg_score']}%")
+            st.metric("Bài code", stats['challenges_completed'])
+            st.metric("Điểm TB Quiz", f"{stats['avg_score']}%")
         
-        st.markdown(f"**🔥 Streak:** {stats['streak_days']} ngày")
-        st.markdown(f"**📅 Tham gia:** {stats['created_at'][:10] if stats['created_at'] else 'N/A'}")
+        st.markdown(f"Streak hiện tại: **{stats['streak_days']} ngày**")
+        st.markdown(f"Ngày tham gia: **{stats['created_at'][:10] if stats['created_at'] else 'N/A'}**")
     
     st.markdown("---")
     
-    # Achievements
-    st.markdown("### 🏅 Thành tích đạt được")
+    st.markdown("### Thành tích đã đạt")
     
     if achievements:
         cols = st.columns(4)
         for idx, ach in enumerate(achievements):
             with cols[idx % 4]:
                 st.markdown(f"""
-                <div class="achievement-badge" style="text-align: center;">
-                    <h2>{ach['icon']}</h2>
-                    <p><b>{ach['name']}</b></p>
+                <div class="achievement-badge" style="text-align: center; width: 100%;">
+                    <div style="font-size: 2rem;">{ach['icon']}</div>
+                    <div><b>{ach['name']}</b></div>
                 </div>
                 """, unsafe_allow_html=True)
     else:
-        st.info("🎯 Chưa có thành tích nào. Hãy làm quiz để unlock!")
+        st.info("Chưa có thành tích nào. Hãy làm quiz để mở khóa!")
     
-    # All possible achievements
-    st.markdown("### 🎯 Tất cả thành tích")
+    st.markdown("---")
+    st.markdown("### Tất cả thành tích")
     
     all_achievements = [
         ('🥇', 'First Quiz', 'Hoàn thành quiz đầu tiên'),
@@ -645,16 +639,16 @@ def show_profile():
         with cols[idx % 3]:
             is_earned = name in earned_names
             opacity = "1.0" if is_earned else "0.3"
-            status = "✅" if is_earned else "🔒"
+            status = "Đã đạt" if is_earned else "Chưa đạt"
             
             st.markdown(f"""
-            <div style="opacity: {opacity}; padding: 0.5rem; 
+            <div style="opacity: {opacity}; padding: 0.75rem; 
                         background: #f0f2f6; border-radius: 10px; 
                         text-align: center; margin: 0.5rem 0;">
-                <h2>{icon}</h2>
-                <p><b>{name}</b></p>
-                <p style="font-size: 0.8rem;">{desc}</p>
-                <p>{status}</p>
+                <div style="font-size: 2rem;">{icon}</div>
+                <p style="font-weight: 600; margin: 0.25rem 0;">{name}</p>
+                <p style="font-size: 0.8rem; opacity: 0.7;">{desc}</p>
+                <p style="font-size: 0.75rem;">{status}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -675,45 +669,50 @@ def main():
         stats = get_user_stats(user['id'])
         
         st.markdown(f"""
-        <div style="text-align: center; padding: 1rem;">
-            <h1>{stats['avatar']}</h1>
-            <h3>{stats['full_name']}</h3>
-            <p>Level {stats['level']} | 🏆 {stats['total_points']} pts</p>
+        <div style="text-align: center; padding: 1rem 0;">
+            <div style="font-size: 3rem;">{stats['avatar']}</div>
+            <div style="font-weight: 600; font-size: 1.1rem; margin-top: 0.5rem;">
+                {stats['full_name']}
+            </div>
+            <div style="opacity: 0.6; font-size: 0.85rem;">
+                @{stats['username']}
+            </div>
+            <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                Level {stats['level']} &nbsp;|&nbsp; {stats['total_points']} pts
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("---")
         
-        # Navigation
+        # Navigation - clean, no excessive icons
         page = st.radio(
-            "📚 Menu",
-            ["🏠 Dashboard", "📝 Quiz", "💻 Code Challenges", 
-             "🏆 Leaderboard", "👤 Profile"],
+            "Menu",
+            ["Dashboard", "Quiz", "Code Challenges", "Leaderboard", "Profile"],
             label_visibility="collapsed"
         )
         
         st.markdown("---")
         
-        if st.button("🚪 Đăng xuất", use_container_width=True):
+        if st.button("Đăng xuất", use_container_width=True):
             st.session_state.user = None
             st.session_state.page = 'login'
             st.session_state.quiz_state = {}
             st.rerun()
         
         st.markdown("---")
-        st.caption("🐍 Python Learning Playground v2.0")
-        st.caption("Made with ❤️")
+        st.caption("Python Learning Playground v2.0")
     
     # Route to correct page
-    if page == "🏠 Dashboard":
+    if page == "Dashboard":
         show_dashboard()
-    elif page == "📝 Quiz":
+    elif page == "Quiz":
         show_quiz_page()
-    elif page == "💻 Code Challenges":
+    elif page == "Code Challenges":
         show_code_challenges()
-    elif page == "🏆 Leaderboard":
+    elif page == "Leaderboard":
         show_leaderboard()
-    elif page == "👤 Profile":
+    elif page == "Profile":
         show_profile()
 
 
