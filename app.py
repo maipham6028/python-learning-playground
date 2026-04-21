@@ -92,7 +92,7 @@ if module == "🏠 Trang chủ":
         """)
     
     with col2:
-        st.markdown("### 📖 Nội dung học")
+        st.markdown("### Nội dung học")
         st.markdown("""
         1. **Operations & Types**: int, float, str, bool
         2. **Loops**: for, while, nested loops
@@ -245,7 +245,7 @@ elif module == "🔢 Module 1: Operations & Data Types":
     
     # TAB 3: Type Conversion
     with tab3:
-        st.subheader("🔄 Chuyển đổi kiểu dữ liệu")
+        st.subheader(" Chuyển đổi kiểu dữ liệu")
         
         col1, col2 = st.columns(2)
         
@@ -285,7 +285,7 @@ Kết quả: {result} ({type(result).__name__})
                     st.error(f"❌ Không thể chuyển đổi: {e}")
         
         with col2:
-            st.markdown("### 📋 Bảng chuyển đổi phổ biến")
+            st.markdown("###  Bảng chuyển đổi phổ biến")
             
             conversion_table = pd.DataFrame({
                 'Từ': ['int', 'float', 'str', 'bool'],
