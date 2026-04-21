@@ -11,7 +11,6 @@ import time
 # Page config
 st.set_page_config(
     page_title="Python Learning Playground",
-    page_icon="🐍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -49,13 +48,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title
-st.markdown('<h1 class="main-header">🐍 Python Learning Playground</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header"> Python Learning Playground</h1>', unsafe_allow_html=True)
 st.markdown("### Trực quan hóa các khái niệm Python cơ bản")
 
 # Sidebar
 with st.sidebar:
     st.image("https://www.python.org/static/community_logos/python-logo-master-v3-TM.png", width=200)
-    st.markdown("## 📚 Chọn Module")
+    st.markdown("##  Chọn Module")
     
     module = st.radio(
         "Chọn chủ đề:",
@@ -82,14 +81,14 @@ if module == "🏠 Trang chủ":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("### 🎯 Tính năng chính")
+        st.markdown("###  Tính năng chính")
         st.markdown("""
-        - ✅ Trực quan hóa các phép toán Python
-        - ✅ Mô phỏng vòng lặp từng bước
-        - ✅ Thao tác với Data Structures
-        - ✅ Visualize NumPy arrays
-        - ✅ Vẽ đồ thị tương tác
-        - ✅ Quiz và thử thách code
+        -  Trực quan hóa các phép toán Python
+        -  Mô phỏng vòng lặp từng bước
+        -  Thao tác với Data Structures
+        -  Visualize NumPy arrays
+        -  Vẽ đồ thị tương tác
+        -  Quiz và thử thách code
         """)
     
     with col2:
@@ -104,10 +103,10 @@ if module == "🏠 Trang chủ":
         """)
     
     st.markdown("---")
-    st.success("👈 Chọn một module từ sidebar để bắt đầu!")
+    st.success(" Chọn một module từ sidebar để bắt đầu!")
     
     # Statistics
-    st.markdown("### 📊 Thống kê nhanh")
+    st.markdown("###  Thống kê nhanh")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Modules", "7", "+2")
     col2.metric("Bài tập", "25+", "+5")
