@@ -644,7 +644,7 @@ def show_profile():
             st.markdown(f"""
             <div style="opacity: {opacity}; padding: 0.75rem; 
                         background: #fff3cd; border-radius: 10px; 
-                        text-align: center; margin: 0.5rem 0;">
+                        text-align: center; margin: 0.5rem 0;color:#333333;">
                 <div style="font-size: 2rem;">{icon}</div>
                 <p style="font-weight: 600; margin: 0.25rem 0;">{name}</p>
                 <p style="font-size: 0.8rem; opacity: 0.7;">{desc}</p>
