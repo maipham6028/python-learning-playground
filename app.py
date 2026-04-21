@@ -428,11 +428,27 @@ def show_code_challenges():
         is_completed = challenge['id'] in completed_challenges
         status = "Hoàn thành" if is_completed else challenge['difficulty']
         
+        # Track failed attempts per challenge
+        attempts_key = f"attempts_{challenge['id']}"
+        if attempts_key not in st.session_state:
+            st.session_state[attempts_key] = 0
+        
+        failed_attempts = st.session_state[attempts_key]
+        MAX_ATTEMPTS = 3
+        
         with st.expander(
             f"[{status}] {challenge['title']}",
             expanded=not is_completed
         ):
             st.markdown(f"**Yêu cầu:** {challenge['description']}")
+            
+            # Show attempts counter if failing
+            if failed_attempts > 0 and not is_completed:
+                remaining = MAX_ATTEMPTS - failed_attempts
+                if remaining > 0:
+                    st.warning(f"Số lần thử sai: {failed_attempts}/{MAX_ATTEMPTS} — Còn {remaining} lần trước khi hiện đáp án.")
+                else:
+                    st.error(f"Đã thử sai {MAX_ATTEMPTS} lần. Đáp án được hiện bên dưới.")
             
             code_key = f"code_{challenge['id']}"
             if code_key not in st.session_state:
@@ -455,11 +471,14 @@ def show_code_challenges():
                         
                         if error:
                             st.error(f"Lỗi: {error}")
+                            st.session_state[attempts_key] += 1
                         else:
                             passed_count = sum(1 for r in results if r['passed'])
                             total_tests = len(results)
                             
                             if all_passed:
+                                # Reset attempts on success
+                                st.session_state[attempts_key] = 0
                                 st.success(f"Tất cả {total_tests} tests đã pass!")
                                 
                                 is_new, points = update_code_progress(
@@ -474,6 +493,8 @@ def show_code_challenges():
                                     time.sleep(2)
                                     st.rerun()
                             else:
+                                # Count failed attempt
+                                st.session_state[attempts_key] += 1
                                 st.warning(f"Passed {passed_count}/{total_tests} tests")
                             
                             st.markdown("**Chi tiết:**")
@@ -501,6 +522,31 @@ def show_code_challenges():
             with col3:
                 if st.button("Reset", key=f"reset_{challenge['id']}", 
                             use_container_width=True):
+                    st.session_state[code_key] = challenge['starter_code']
+                    st.session_state[attempts_key] = 0
+                    st.rerun()
+            
+            # Show solution after MAX_ATTEMPTS failed tries
+            if st.session_state[attempts_key] >= MAX_ATTEMPTS and not is_completed:
+                st.markdown("---")
+                st.markdown("#### Gợi ý đáp án")
+                solution = challenge.get('solution', None)
+                if solution:
+                    st.code(solution, language="python")
+                else:
+                    # Auto-generate solution hint from hints list
+                    st.info("Xem lại phần gợi ý bên trên và thử kết hợp chúng lại.")
+                    hints = challenge.get('hints', [])
+                    if hints:
+                        st.code(
+                            f"# Hướng dẫn từng bước:\n" +
+                            "\n".join(f"# {h}" for h in hints),
+                            language="python"
+                        )
+                
+                if st.button("Thử lại từ đầu", key=f"retry_{challenge['id']}", 
+                            use_container_width=True):
+                    st.session_state[attempts_key] = 0
                     st.session_state[code_key] = challenge['starter_code']
                     st.rerun()
 
@@ -643,8 +689,8 @@ def show_profile():
             
             st.markdown(f"""
             <div style="opacity: {opacity}; padding: 0.75rem; 
-                        background: #fff3cd; border-radius: 10px; 
-                        text-align: center; margin: 0.5rem 0;color:#333333;">
+                        background: #f0f2f6; border-radius: 10px; 
+                        text-align: center; margin: 0.5rem 0;">
                 <div style="font-size: 2rem;">{icon}</div>
                 <p style="font-weight: 600; margin: 0.25rem 0;">{name}</p>
                 <p style="font-size: 0.8rem; opacity: 0.7;">{desc}</p>
