@@ -22,7 +22,6 @@ init_database()
 # Page config
 st.set_page_config(
     page_title="Python Learning Playground",
-    page_icon="🐍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -78,14 +77,12 @@ if 'quiz_state' not in st.session_state:
 
 def show_login_page():
     """Display login/register page"""
-    st.markdown('<h1 class="main-header">🐍 Python Learning Playground</h1>', 
+    st.markdown('<h1 class="main-header"> Python Learning Playground</h1>', 
                 unsafe_allow_html=True)
-    st.markdown("### 🎓 Học Python qua trực quan hóa & Thử thách!")
-    
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        tab1, tab2 = st.tabs(["🔐 Đăng nhập", "📝 Đăng ký"])
+        tab1, tab2 = st.tabs([" Đăng nhập", " Đăng ký"])
         
         with tab1:
             st.markdown("#### Đăng nhập vào tài khoản")
@@ -93,7 +90,7 @@ def show_login_page():
             with st.form("login_form"):
                 username = st.text_input("Username hoặc Email")
                 password = st.text_input("Password", type="password")
-                submit = st.form_submit_button("🚀 Đăng nhập", use_container_width=True)
+                submit = st.form_submit_button(" Đăng nhập", use_container_width=True)
                 
                 if submit:
                     if username and password:
@@ -101,7 +98,7 @@ def show_login_page():
                         if success:
                             st.session_state.user = result
                             st.session_state.page = 'dashboard'
-                            st.success(f"✅ Chào mừng {result['full_name']}!")
+                            st.success(f" Chào mừng {result['full_name']}!")
                             time.sleep(1)
                             st.rerun()
                         else:
