@@ -15,6 +15,7 @@ from database import (
 )
 from quiz_data import get_quiz, get_all_chapters, QUIZ_QUESTIONS
 from code_challenges import get_challenges, run_code_tests, CODE_CHALLENGES
+from games import show_game_center
 
 # Initialize database
 init_database()
@@ -609,7 +610,9 @@ def show_leaderboard():
     st.dataframe(df, use_container_width=True, hide_index=True)
 
 
+# =============================================================================
 # PROFILE PAGE
+# =============================================================================
 
 def show_profile():
     """Show user profile with achievements"""
@@ -697,8 +700,9 @@ def show_profile():
             """, unsafe_allow_html=True)
 
 
+# =============================================================================
 # MAIN APP
-
+# =============================================================================
 
 def main():
     # If not logged in, show login page
@@ -731,7 +735,7 @@ def main():
         # Navigation - clean, no excessive icons
         page = st.radio(
             "Menu",
-            ["Dashboard", "Quiz", "Code Challenges", "Leaderboard", "Profile"],
+            ["Dashboard", "Quiz", "Code Challenges", "Games", "Leaderboard", "Profile"],
             label_visibility="collapsed"
         )
         
@@ -753,6 +757,8 @@ def main():
         show_quiz_page()
     elif page == "Code Challenges":
         show_code_challenges()
+    elif page == "Games":
+        show_game_center()
     elif page == "Leaderboard":
         show_leaderboard()
     elif page == "Profile":
