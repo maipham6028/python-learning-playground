@@ -192,8 +192,7 @@ def show_dashboard():
         
         with cols[idx % 2]:
             with st.container():
-                st.markdown(f"#### {chapter_title}")
-                
+                st.markdown(f" {chapter_title}"),
                 completion = chapter_progress['completion_percentage']
                 st.progress(completion / 100)
                 
