@@ -137,9 +137,9 @@ def award_game_points(user_id, points, game_name):
 # =============================================================================
 
 def game_memory_card():
-    """Memory matching game - pair Python keyword with definition"""
+    """Matching game - click to select and pair keyword with definition"""
     st.markdown("### Memory Card — Ghép cặp Keyword & Định nghĩa")
-    st.caption("Lật 2 thẻ, ghép đúng keyword với định nghĩa của nó. Ghép hết để thắng!")
+    st.caption("Click 1 keyword và 1 định nghĩa tương ứng để ghép cặp. Ghép hết để thắng!")
     
     # Initialize game state
     if 'memory_state' not in st.session_state:
@@ -148,43 +148,46 @@ def game_memory_card():
     state = st.session_state.memory_state
     
     if state is None or st.button("Bắt đầu / Chơi lại", key="memory_new"):
-        # Create shuffled cards
-        cards = []
-        for i, (kw, defn) in enumerate(MEMORY_PAIRS):
-            cards.append({'id': f'k{i}', 'text': kw, 'pair_id': i, 'type': 'keyword'})
-            cards.append({'id': f'd{i}', 'text': defn, 'pair_id': i, 'type': 'definition'})
-        random.shuffle(cards)
+        # Create 2 separate lists: keywords and definitions, shuffled
+        keywords = [{'id': f'k{i}', 'text': kw, 'pair_id': i, 'type': 'keyword'} 
+                    for i, (kw, _) in enumerate(MEMORY_PAIRS)]
+        definitions = [{'id': f'd{i}', 'text': defn, 'pair_id': i, 'type': 'definition'} 
+                       for i, (_, defn) in enumerate(MEMORY_PAIRS)]
+        random.shuffle(keywords)
+        random.shuffle(definitions)
         
         st.session_state.memory_state = {
-            'cards': cards,
-            'flipped': [],
-            'matched': [],
-            'moves': 0,
+            'keywords': keywords,
+            'definitions': definitions,
+            'selected_keyword': None,  # index in keywords list
+            'selected_definition': None,  # index in definitions list
+            'matched_pairs': [],  # list of pair_ids
+            'attempts': 0,
             'start_time': time.time(),
             'completed': False,
+            'last_result': None,  # 'correct' / 'wrong' / None
         }
         st.rerun()
     
     if state is None:
-        st.info("Click 'Bắt đầu' để chơi!")
+        st.info("Click 'Bắt đầu / Chơi lại' để chơi!")
         return
     
     # Stats
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Số lượt", state['moves'])
+        st.metric("Số lượt thử", state['attempts'])
     with col2:
-        matched_count = len(state['matched']) // 2
-        st.metric("Đã ghép", f"{matched_count}/{len(MEMORY_PAIRS)}")
+        st.metric("Đã ghép", f"{len(state['matched_pairs'])}/{len(MEMORY_PAIRS)}")
     with col3:
         elapsed = int(time.time() - state['start_time'])
         st.metric("Thời gian", f"{elapsed}s")
     
     # Check completion
-    if len(state['matched']) == len(state['cards']) and not state['completed']:
+    if len(state['matched_pairs']) == len(MEMORY_PAIRS) and not state['completed']:
         state['completed'] = True
         time_taken = int(time.time() - state['start_time'])
-        bonus = max(50, 200 - state['moves'] * 5 - time_taken)
+        bonus = max(50, 200 - state['attempts'] * 5 - time_taken)
         
         award_game_points(
             st.session_state.user['id'], 
@@ -193,49 +196,84 @@ def game_memory_card():
         )
         st.balloons()
         st.success(f"Hoàn thành! +{bonus} điểm")
-        st.rerun()
     
-    # Auto-hide unmatched flipped cards after 1.5s
-    if len(state['flipped']) == 2:
-        c1_idx, c2_idx = state['flipped']
-        c1 = state['cards'][c1_idx]
-        c2 = state['cards'][c2_idx]
-        
-        if c1['pair_id'] == c2['pair_id'] and c1['type'] != c2['type']:
-            # Match!
-            state['matched'].extend([c1_idx, c2_idx])
-            state['flipped'] = []
-        else:
-            # No match - show briefly then hide
-            time.sleep(1.2)
-            state['flipped'] = []
-            st.rerun()
+    # Show feedback from last attempt
+    if state['last_result'] == 'correct':
+        st.success("Ghép đúng!")
+    elif state['last_result'] == 'wrong':
+        st.error("Sai rồi, thử lại!")
     
-    # Render 4x4 grid
-    cols_per_row = 4
-    for row in range(len(state['cards']) // cols_per_row):
-        cols = st.columns(cols_per_row)
-        for col_idx in range(cols_per_row):
-            card_idx = row * cols_per_row + col_idx
-            if card_idx >= len(state['cards']):
-                continue
+    st.markdown("---")
+    
+    # Show 2 columns: Keywords (left) and Definitions (right)
+    col_kw, col_def = st.columns(2)
+    
+    with col_kw:
+        st.markdown("#### Keywords")
+        for idx, kw in enumerate(state['keywords']):
+            is_matched = kw['pair_id'] in state['matched_pairs']
+            is_selected = (state['selected_keyword'] == idx)
             
-            card = state['cards'][card_idx]
-            is_flipped = card_idx in state['flipped']
-            is_matched = card_idx in state['matched']
+            if is_matched:
+                st.success(f"✓ {kw['text']}")
+            elif is_selected:
+                # Highlight selected
+                if st.button(f"▶ {kw['text']}", key=f"kw_{idx}", 
+                           use_container_width=True, type="primary"):
+                    state['selected_keyword'] = None
+                    state['last_result'] = None
+                    st.rerun()
+            else:
+                if st.button(kw['text'], key=f"kw_{idx}", 
+                           use_container_width=True):
+                    state['selected_keyword'] = idx
+                    state['last_result'] = None
+                    # If both selected → check match
+                    if state['selected_definition'] is not None:
+                        check_match(state)
+                    st.rerun()
+    
+    with col_def:
+        st.markdown("#### Định nghĩa")
+        for idx, defn in enumerate(state['definitions']):
+            is_matched = defn['pair_id'] in state['matched_pairs']
+            is_selected = (state['selected_definition'] == idx)
             
-            with cols[col_idx]:
-                if is_matched:
-                    st.success(card['text'])
-                elif is_flipped:
-                    st.info(card['text'])
-                else:
-                    if st.button("?", key=f"mem_card_{card_idx}", use_container_width=True):
-                        if len(state['flipped']) < 2:
-                            state['flipped'].append(card_idx)
-                            if len(state['flipped']) == 2:
-                                state['moves'] += 1
-                            st.rerun()
+            if is_matched:
+                st.success(f"✓ {defn['text']}")
+            elif is_selected:
+                if st.button(f"▶ {defn['text']}", key=f"def_{idx}", 
+                           use_container_width=True, type="primary"):
+                    state['selected_definition'] = None
+                    state['last_result'] = None
+                    st.rerun()
+            else:
+                if st.button(defn['text'], key=f"def_{idx}", 
+                           use_container_width=True):
+                    state['selected_definition'] = idx
+                    state['last_result'] = None
+                    # If both selected → check match
+                    if state['selected_keyword'] is not None:
+                        check_match(state)
+                    st.rerun()
+
+
+def check_match(state):
+    """Helper to check if selected pair matches"""
+    kw = state['keywords'][state['selected_keyword']]
+    defn = state['definitions'][state['selected_definition']]
+    state['attempts'] += 1
+    
+    if kw['pair_id'] == defn['pair_id']:
+        # Match!
+        state['matched_pairs'].append(kw['pair_id'])
+        state['last_result'] = 'correct'
+    else:
+        state['last_result'] = 'wrong'
+    
+    # Reset selection
+    state['selected_keyword'] = None
+    state['selected_definition'] = None
 
 
 # =============================================================================
