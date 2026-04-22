@@ -221,7 +221,7 @@ def show_dashboard():
 
 def show_quiz_page():
     """Quiz interface with timer and scoring"""
-    st.markdown("## Quiz — Kiểm tra kiến thức")
+    st.markdown("## Quiz - Kiểm tra kiến thức")
     
     if 'active_quiz' not in st.session_state.quiz_state:
         st.markdown("### Chọn chương để làm quiz:")
@@ -444,7 +444,7 @@ def show_code_challenges():
             if failed_attempts > 0 and not is_completed:
                 remaining = MAX_ATTEMPTS - failed_attempts
                 if remaining > 0:
-                    st.warning(f"Số lần thử sai: {failed_attempts}/{MAX_ATTEMPTS} — Còn {remaining} lần trước khi hiện đáp án.")
+                    st.warning(f"Số lần thử sai: {failed_attempts}/{MAX_ATTEMPTS} - Còn {remaining} lần trước khi hiện đáp án.")
                 else:
                     st.error(f"Đã thử sai {MAX_ATTEMPTS} lần. Đáp án được hiện bên dưới.")
             
@@ -501,7 +501,7 @@ def show_code_challenges():
                                     st.success(f"Test {r['test_num']}: Pass")
                                 else:
                                     if 'error' in r:
-                                        st.error(f"Test {r['test_num']}: Lỗi — {r['error']}")
+                                        st.error(f"Test {r['test_num']}: Lỗi - {r['error']}")
                                     else:
                                         st.error(
                                             f"Test {r['test_num']}: Fail\n"
