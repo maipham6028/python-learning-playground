@@ -92,7 +92,9 @@ if 'quiz_state' not in st.session_state:
 def show_login_page():
     """Display login/register page"""
     st.markdown('<h1 class="main-header">🐍 Python Learning Playground</h1>', 
-                unsafe_allow_html=True)    
+                unsafe_allow_html=True)
+    st.markdown("### 🎓 Học Python qua trực quan hóa & Thử thách!")
+    
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
@@ -192,7 +194,8 @@ def show_dashboard():
         
         with cols[idx % 2]:
             with st.container():
-                st.markdown(f" {chapter_title}"),
+                st.markdown(f"#### {chapter_title}")
+                
                 completion = chapter_progress['completion_percentage']
                 st.progress(completion / 100)
                 
@@ -220,7 +223,7 @@ def show_dashboard():
 
 def show_quiz_page():
     """Quiz interface with timer and scoring"""
-    st.markdown("## Quiz - Kiểm tra kiến thức")
+    st.markdown("## Quiz — Kiểm tra kiến thức")
     
     if 'active_quiz' not in st.session_state.quiz_state:
         st.markdown("### Chọn chương để làm quiz:")
@@ -234,7 +237,7 @@ def show_quiz_page():
                 num_questions = len(quiz['questions'])
                 
                 if st.button(
-                    chapter_title ,
+                    chapter_title,
                     key=f"start_quiz_{chapter_id}",
                     use_container_width=True
                 ):
@@ -443,7 +446,7 @@ def show_code_challenges():
             if failed_attempts > 0 and not is_completed:
                 remaining = MAX_ATTEMPTS - failed_attempts
                 if remaining > 0:
-                    st.warning(f"Số lần thử sai: {failed_attempts}/{MAX_ATTEMPTS} - Còn {remaining} lần trước khi hiện đáp án.")
+                    st.warning(f"Số lần thử sai: {failed_attempts}/{MAX_ATTEMPTS} — Còn {remaining} lần trước khi hiện đáp án.")
                 else:
                     st.error(f"Đã thử sai {MAX_ATTEMPTS} lần. Đáp án được hiện bên dưới.")
             
@@ -500,7 +503,7 @@ def show_code_challenges():
                                     st.success(f"Test {r['test_num']}: Pass")
                                 else:
                                     if 'error' in r:
-                                        st.error(f"Test {r['test_num']}: Lỗi - {r['error']}")
+                                        st.error(f"Test {r['test_num']}: Lỗi — {r['error']}")
                                     else:
                                         st.error(
                                             f"Test {r['test_num']}: Fail\n"
@@ -606,9 +609,7 @@ def show_leaderboard():
     st.dataframe(df, use_container_width=True, hide_index=True)
 
 
-# =============================================================================
 # PROFILE PAGE
-# =============================================================================
 
 def show_profile():
     """Show user profile with achievements"""
@@ -696,9 +697,8 @@ def show_profile():
             """, unsafe_allow_html=True)
 
 
-# =============================================================================
 # MAIN APP
-# =============================================================================
+
 
 def main():
     # If not logged in, show login page
