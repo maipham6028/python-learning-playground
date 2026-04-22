@@ -234,7 +234,7 @@ def show_quiz_page():
                 num_questions = len(quiz['questions'])
                 
                 if st.button(
-                    f"{chapter_title} ,
+                    chapter_title ,
                     key=f"start_quiz_{chapter_id}",
                     use_container_width=True
                 ):
