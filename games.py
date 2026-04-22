@@ -30,7 +30,53 @@ MEMORY_PAIRS = [
     ("list", "Cấu trúc dữ liệu có thứ tự, mutable"),
 ]
 
-# 5-letter Python keywords for Pydle
+# Python keywords for Hangman (various lengths)
+HANGMAN_WORDS = [
+    # Short (3-4 letters)
+    ("def", "Từ khóa định nghĩa hàm"),
+    ("for", "Vòng lặp có số lần xác định"),
+    ("int", "Kiểu số nguyên"),
+    ("str", "Kiểu chuỗi ký tự"),
+    ("try", "Khối xử lý exception"),
+    ("not", "Toán tử phủ định logic"),
+    ("and", "Toán tử logic VÀ"),
+    ("pass", "Lệnh không làm gì"),
+    ("list", "Cấu trúc dữ liệu có thứ tự, mutable"),
+    ("dict", "Cấu trúc key-value"),
+    ("None", "Giá trị rỗng"),
+    ("True", "Giá trị Boolean đúng"),
+    # Medium (5-6 letters)
+    ("range", "Hàm tạo dãy số"),
+    ("while", "Vòng lặp có điều kiện"),
+    ("class", "Từ khóa định nghĩa lớp"),
+    ("break", "Thoát khỏi vòng lặp"),
+    ("False", "Giá trị Boolean sai"),
+    ("input", "Hàm nhận dữ liệu từ người dùng"),
+    ("print", "Hàm in ra màn hình"),
+    ("float", "Kiểu số thực"),
+    ("tuple", "Sequence immutable"),
+    ("yield", "Tạo generator"),
+    ("raise", "Chủ động ném exception"),
+    ("super", "Gọi method class cha"),
+    ("lambda", "Hàm ẩn danh một dòng"),
+    ("import", "Nhập thư viện"),
+    ("return", "Trả về giá trị từ hàm"),
+    ("global", "Khai báo biến global"),
+    ("except", "Bắt exception"),
+    # Long (7-10 letters)
+    ("finally", "Khối luôn chạy dù có lỗi hay không"),
+    ("continue", "Bỏ qua iteration hiện tại"),
+    ("function", "Khối code có thể tái sử dụng"),
+    ("iterator", "Đối tượng có thể lặp qua"),
+    ("variable", "Biến lưu giá trị"),
+    ("operator", "Toán tử như +, -, *, /"),
+    ("parameter", "Tham số truyền vào hàm"),
+    ("recursion", "Hàm tự gọi chính nó"),
+    ("exception", "Lỗi phát sinh khi chạy"),
+]
+
+
+# Python keywords for Pydle (5-letter legacy, keep for compatibility)
 PYDLE_WORDS = [
     "range", "while", "class", "break", "False",
     "input", "print", "float", "tuple", "yield",
@@ -277,24 +323,100 @@ def check_match(state):
 
 
 # =============================================================================
-# GAME 2: PYDLE (Wordle Python)
+# GAME 2: HANGMAN PYTHON
 # =============================================================================
 
-def game_pydle():
-    """Wordle with 5-letter Python keywords"""
-    st.markdown("### Pydle — Đoán keyword Python 5 chữ cái")
-    st.caption("Bạn có 6 lần đoán. Xanh = đúng vị trí, Vàng = sai vị trí, Xám = không có.")
+HANGMAN_STAGES = [
+    # Stage 0 - chưa sai lần nào
+    """
+    ┌─────┐
+    │     │
+    │      
+    │      
+    │      
+    │      
+   ─┴─────
+    """,
+    # Stage 1 - sai 1 lần (đầu)
+    """
+    ┌─────┐
+    │     │
+    │     O
+    │      
+    │      
+    │      
+   ─┴─────
+    """,
+    # Stage 2 - sai 2 lần (thân)
+    """
+    ┌─────┐
+    │     │
+    │     O
+    │     │
+    │      
+    │      
+   ─┴─────
+    """,
+    # Stage 3 - sai 3 lần (tay trái)
+    """
+    ┌─────┐
+    │     │
+    │     O
+    │    /│
+    │      
+    │      
+   ─┴─────
+    """,
+    # Stage 4 - sai 4 lần (tay phải)
+    """
+    ┌─────┐
+    │     │
+    │     O
+    │    /│\\
+    │      
+    │      
+   ─┴─────
+    """,
+    # Stage 5 - sai 5 lần (chân trái)
+    """
+    ┌─────┐
+    │     │
+    │     O
+    │    /│\\
+    │    / 
+    │      
+   ─┴─────
+    """,
+    # Stage 6 - sai 6 lần (chân phải - GAME OVER)
+    """
+    ┌─────┐
+    │     │
+    │     X
+    │    /│\\
+    │    / \\
+    │      
+   ─┴─────
+    """,
+]
+
+
+def game_hangman():
+    """Hangman - đoán từng chữ cái của keyword Python"""
+    st.markdown("### Hangman Python — Đoán keyword qua từng chữ cái")
+    st.caption("Đoán đúng chữ cái để hoàn thiện keyword. Sai 6 lần là thua!")
     
-    if 'pydle_state' not in st.session_state:
-        st.session_state.pydle_state = None
+    if 'hangman_state' not in st.session_state:
+        st.session_state.hangman_state = None
     
-    state = st.session_state.pydle_state
+    state = st.session_state.hangman_state
     
-    if state is None or st.button("Từ mới", key="pydle_new"):
-        target = random.choice(PYDLE_WORDS).lower()
-        st.session_state.pydle_state = {
-            'target': target,
-            'guesses': [],
+    if state is None or st.button("Từ mới", key="hangman_new"):
+        word, hint = random.choice(HANGMAN_WORDS)
+        st.session_state.hangman_state = {
+            'word': word.lower(),
+            'hint': hint,
+            'guessed_letters': set(),
+            'wrong_count': 0,
             'won': False,
             'game_over': False,
         }
@@ -304,61 +426,93 @@ def game_pydle():
         st.info("Click 'Từ mới' để bắt đầu!")
         return
     
-    target = state['target']
+    word = state['word']
+    guessed = state['guessed_letters']
+    wrong = state['wrong_count']
+    MAX_WRONG = 6
     
-    # Render previous guesses
-    for guess in state['guesses']:
-        cols = st.columns(5)
-        for i, char in enumerate(guess):
-            with cols[i]:
-                if char == target[i]:
-                    color = "#538d4e"  # green
-                elif char in target:
-                    color = "#b59f3b"  # yellow
-                else:
-                    color = "#3a3a3c"  # gray
-                st.markdown(
-                    f"""<div style='background:{color}; color:white; 
-                    text-align:center; padding:1rem; border-radius:5px;
-                    font-size:1.5rem; font-weight:bold;'>{char.upper()}</div>""",
-                    unsafe_allow_html=True
-                )
+    # Display hangman ASCII
+    col_left, col_right = st.columns([1, 1])
     
-    # Input guess
+    with col_left:
+        st.code(HANGMAN_STAGES[min(wrong, 6)], language=None)
+        st.caption(f"Số lần sai: {wrong}/{MAX_WRONG}")
+    
+    with col_right:
+        # Show hint
+        st.info(f"**Gợi ý:** {state['hint']}")
+        st.caption(f"Độ dài: {len(word)} chữ cái")
+        
+        # Show word with blanks
+        display = " ".join([c.upper() if c in guessed else "_" for c in word])
+        st.markdown(
+            f"<div style='font-size: 2rem; font-weight: bold; letter-spacing: 0.2rem; "
+            f"text-align: center; padding: 1rem; border: 2px solid #667eea; "
+            f"border-radius: 10px;'>{display}</div>",
+            unsafe_allow_html=True
+        )
+    
+    # Check win/lose
     if not state['game_over']:
-        with st.form("pydle_form", clear_on_submit=True):
-            guess_input = st.text_input(
-                f"Lần đoán {len(state['guesses']) + 1}/6 (5 chữ cái):",
-                max_chars=5
-            )
-            submit = st.form_submit_button("Đoán")
-            
-            if submit:
-                guess = guess_input.lower().strip()
-                if len(guess) != 5:
-                    st.error("Phải nhập đúng 5 chữ cái!")
-                elif not guess.isalpha():
-                    st.error("Chỉ dùng chữ cái!")
-                else:
-                    state['guesses'].append(guess)
-                    
-                    if guess == target:
-                        state['won'] = True
-                        state['game_over'] = True
-                        points = 100 - (len(state['guesses']) - 1) * 15
-                        award_game_points(st.session_state.user['id'], points, 'pydle')
-                        st.balloons()
-                        st.success(f"Chính xác! +{points} điểm")
-                    elif len(state['guesses']) >= 6:
-                        state['game_over'] = True
-                        st.error(f"Hết lượt! Đáp án: **{target.upper()}**")
-                    
-                    st.rerun()
+        # Check win
+        if all(c in guessed for c in word):
+            state['won'] = True
+            state['game_over'] = True
+            points = max(30, 150 - wrong * 20)
+            award_game_points(st.session_state.user['id'], points, 'hangman')
+            st.balloons()
+            st.success(f"Chính xác! Từ cần đoán là **{word.upper()}**. +{points} điểm")
+        # Check lose
+        elif wrong >= MAX_WRONG:
+            state['game_over'] = True
+            st.error(f"Thua rồi! Từ cần đoán là: **{word.upper()}**")
     else:
         if state['won']:
-            st.success(f"Đã đoán đúng sau {len(state['guesses'])} lần!")
+            st.success(f"Bạn đã đoán đúng: **{word.upper()}**!")
         else:
-            st.error(f"Đáp án là: **{target.upper()}**")
+            st.error(f"Đáp án: **{word.upper()}**")
+    
+    # Alphabet buttons
+    st.markdown("---")
+    st.markdown("**Chọn chữ cái:**")
+    
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
+    
+    # Render in 2 rows of 13 letters each
+    for row_start in [0, 13]:
+        cols = st.columns(13)
+        for i, letter in enumerate(alphabet[row_start:row_start + 13]):
+            with cols[i]:
+                is_guessed = letter in guessed
+                is_in_word = letter in word
+                
+                if is_guessed:
+                    # Already guessed - show disabled with color
+                    if is_in_word:
+                        st.markdown(
+                            f"<div style='background:#10b981; color:white; "
+                            f"text-align:center; padding:0.5rem; border-radius:5px; "
+                            f"font-weight:bold;'>{letter.upper()}</div>",
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.markdown(
+                            f"<div style='background:#6b7280; color:white; "
+                            f"text-align:center; padding:0.5rem; border-radius:5px; "
+                            f"font-weight:bold; opacity:0.5;'>{letter.upper()}</div>",
+                            unsafe_allow_html=True
+                        )
+                else:
+                    if st.button(
+                        letter.upper(),
+                        key=f"hangman_{letter}",
+                        use_container_width=True,
+                        disabled=state['game_over']
+                    ):
+                        state['guessed_letters'].add(letter)
+                        if letter not in word:
+                            state['wrong_count'] += 1
+                        st.rerun()
 
 
 # =============================================================================
@@ -766,9 +920,9 @@ def show_game_center():
                 'time': '3-5 phút',
             },
             {
-                'id': 'pydle',
-                'name': 'Pydle',
-                'desc': 'Đoán keyword Python 5 chữ cái (kiểu Wordle)',
+                'id': 'hangman',
+                'name': 'Hangman Python',
+                'desc': 'Đoán keyword Python qua từng chữ cái',
                 'difficulty': 'Trung bình',
                 'time': '2-3 phút',
             },
@@ -811,7 +965,7 @@ def show_game_center():
     # Back button
     if st.button("← Quay lại danh sách game"):
         # Clear game-specific states
-        for key in ['memory_state', 'pydle_state', 'game2048_state', 
+        for key in ['memory_state', 'hangman_state', 'pydle_state', 'game2048_state', 
                     'minesweeper_state', 'bingo_state']:
             if key in st.session_state:
                 del st.session_state[key]
@@ -824,8 +978,8 @@ def show_game_center():
     game = st.session_state.current_game
     if game == 'memory':
         game_memory_card()
-    elif game == 'pydle':
-        game_pydle()
+    elif game == 'hangman':
+        game_hangman()
     elif game == '2048py':
         game_2048py()
     elif game == 'minesweeper':
