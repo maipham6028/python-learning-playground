@@ -572,8 +572,8 @@ def show_leaderboard():
         st.markdown("### Top 3")
         col1, col2, col3 = st.columns(3)
         
-        medals = ['2nd', '1st', '3rd']
-        positions = [1, 0, 2]
+        medals = ['1st', '2nd', '3rd']
+        positions = [0, 1, 2]
         
         for col, pos in zip([col1, col2, col3], positions):
             if pos < len(leaderboard):
