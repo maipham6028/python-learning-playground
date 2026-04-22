@@ -92,9 +92,7 @@ if 'quiz_state' not in st.session_state:
 def show_login_page():
     """Display login/register page"""
     st.markdown('<h1 class="main-header">🐍 Python Learning Playground</h1>', 
-                unsafe_allow_html=True)
-    st.markdown("### 🎓 Học Python qua trực quan hóa & Thử thách!")
-    
+                unsafe_allow_html=True)    
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
