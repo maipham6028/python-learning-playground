@@ -7,8 +7,7 @@ Games module - 3 Python-themed games with knowledge reminders
 import streamlit as st
 import random
 import time
-import sqlite3
-from database import DB_PATH
+from database import get_supabase
 
 
 # =============================================================================
@@ -433,16 +432,17 @@ BINGO_CLUES = {
 
 def award_game_points(user_id, points, game_name):
     """Award points for playing games"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE users 
-        SET total_points = total_points + ?,
-            level = (total_points + ?) / 500 + 1
-        WHERE id = ?
-    """, (points, points, user_id))
-    conn.commit()
-    conn.close()
+    try:
+        supabase = get_supabase()
+        user = supabase.table("users").select("total_points").eq("id", user_id).execute()
+        if user.data:
+            new_points = (user.data[0]['total_points'] or 0) + points
+            supabase.table("users").update({
+                "total_points": new_points,
+                "level": new_points // 500 + 1,
+            }).eq("id", user_id).execute()
+    except Exception as e:
+        pass
     return points
 
 
